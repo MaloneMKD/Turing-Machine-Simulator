@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file>Images and Icons/warning.png</file>
+        <file>Images and Icons/hammer.png</file>
+        <file>Images and Icons/load icon.png</file>
+        <file>Images and Icons/save icon.png</file>
+        <file>Images and Icons/exit icon.png</file>
+        <file>Images and Icons/design icon.png</file>
+        <file>Images and Icons/help icon.png</file>
+        <file>Images and Icons/options icon.png</file>
+        <file>Images and Icons/summary icon.png</file>
+        <file>Images and Icons/browse icon.png</file>
+        <file>Images and Icons/sim3.png</file>
+    </qresource>
+</RCC>
