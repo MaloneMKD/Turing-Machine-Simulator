@@ -59,7 +59,6 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
     ui->tabWidget->setTabIcon(3, QIcon(":/new/prefix1/Images and Icons/help icon.png"));
     ui->tabWidget->setFont(QFont("Corbel Light", 10));
 
-
     //Initialize variables:
     m_HasHALTState = false;
     m_HasSTARTState = false;
@@ -234,6 +233,10 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
 
     //Help page:
     this->setupHelpPage();
+
+    //Create save file if there isn't one
+    QDir tempDir(QDir::homePath() + "/Documents");
+    tempDir.mkdir("Saved TMs");
 
     //Show logo:
     m_Logo = m_Scene->addPixmap(QPixmap(":/new/prefix1/Images and Icons/sim3.png"));
@@ -703,6 +706,16 @@ void TuringMachineWindow::loadSettings()
         m_AHCColor = QColor(inStream.readLine());
         m_CSCColor = QColor(inStream.readLine());
         loadFile.close();
+    }
+    else
+    {
+        QDir dir(QDir::homePath() + "/Documents");
+        dir.mkdir("Saved TMs");
+        m_SavePath = dir.path() + "/Saved TMs";
+        m_TapeLength = 50;
+        m_Speed = 9;
+        m_AHCColor = QColor("#55aa00");
+        m_CSCColor = QColor("#55ffff");
     }
 }
 

@@ -30,7 +30,7 @@ MyStateItem::MyStateItem(QObject *parent, QGraphicsItem *parentItem, QString lab
     m_HasLoopArrow = false;
     m_BrushColor = Qt::white;
     m_ConnectedArrowColor = Qt::cyan;
-    m_LabelPattern = QRegularExpression("([0-9]|[A-Z]|[a-z]|$|#|-){1,1},([0-9]|[A-Z]|[a-z]|$|#|-){1,1},(r|R|l|L|s|S){1,1}");
+    m_LabelPattern = QRegularExpression("([0-9]|[A-Z]|[a-z]|$|#|-){1,1},([0-9]|[A-Z]|[a-z]|$|#|-){1,1},(r|R|l|L|s|S){1,1}$");
 
     //Set up:
     this->setRect(10,10,50,50);
@@ -244,8 +244,6 @@ void MyStateItem::decrementStateNameNum(int stateNum)
 {
     if(!m_IsHALTState)
     {
-       /* QString s = m_LabelString[1];
-        int n = s.toInt();*/
         m_LabelString = QString("q%1") .arg(stateNum - 1);
         m_Label->setPlainText(m_LabelString);
     }
