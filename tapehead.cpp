@@ -21,7 +21,7 @@ TapeHead::TapeHead(QObject *parent)
     QList<QPointF> points;
     points << QPointF(0, 0) << QPointF(2, 3) << QPointF(4, 0);
     this->setPolygon(QPolygonF(points));
-    this->setScale(5.0);
+    this->setScale(4.5);
     this->setPen(QPen(Qt::black, 0.2));
     this->setBrush(Qt::black);
 }

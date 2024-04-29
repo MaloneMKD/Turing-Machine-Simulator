@@ -190,6 +190,7 @@ private:
     int m_TapeCounter;
     int m_MoveCounter;
     int m_TapeLength;
+    int m_CellWidth;
     bool m_HasHALTState;
     bool m_HasSTARTState;
     bool m_SettingsChanged;

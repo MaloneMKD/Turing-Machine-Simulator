@@ -26,6 +26,8 @@
 #include <QTextEdit>
 #include <QColorDialog>
 #include <QDesktopServices>
+#include <QVBoxLayout>
+#include <QListWidgetItem>
 #include "popupmessagebox.h"
 #include "pixmapbutton.h"
 #include "savedialog.h"
@@ -38,6 +40,8 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
 
     //Load saved settings:
     this->loadSettings();
+    ui->tapeLengthSpinBox->setValue(m_TapeLength);
+    ui->playSpeedSpinBox->setValue(m_Speed);
 
     //Window configurations:
     this->setWindowIcon(QIcon(":/new/prefix1/Images and Icons/sim3.png"));
@@ -71,104 +75,34 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
         m_SavePath = QDir::homePath() + "/Documents/Saved TMs";
     m_LoadedFile = "";
     m_LoadedDescription = "";
+    m_CellWidth = 32;
 
-    const int TM_SCENE_WIDTH = 1515, TM_SCENE_HEIGHT = 598;
     //Setup the TM scene:
     m_Scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(m_Scene);
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);
     ui->graphicsView->setFrameStyle(QFrame::StyledPanel);
     ui->graphicsView->setFrameShadow(QFrame::Raised);
-    ui->graphicsView->setFixedSize(TM_SCENE_WIDTH + 5, TM_SCENE_HEIGHT + 5);
+    ui->graphicsView->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
     //Setup variables:
     m_NumOfStates = 0;
-    m_Scene->setSceneRect(0,0,TM_SCENE_WIDTH,TM_SCENE_HEIGHT);
-    m_Scene->setSceneRect(ui->graphicsView->sceneRect());
 
-    //Setup line divide:
-    m_Scene->addLine(1388, 15, 1388, 583, QPen(Qt::gray, 2.0));
-
-    //Set up buttons:
-    int buttonX = 1398;
-    int buttonY = 20;
-
-        //Add state button:
-    SquareButton *addStateButton = new SquareButton(this, QRectF(buttonX, buttonY, 100, 30), "Add State");
-    connect(addStateButton, SIGNAL(clicked()), this, SLOT(addStateButtonClicked()));
-    m_Scene->addItem(addStateButton);
-        //Delete state button:
-    SquareButton *deleteStateButton = new SquareButton(this, QRectF(buttonX, buttonY + 38, 100, 30), "Delete State");
-    connect(deleteStateButton, SIGNAL(clicked()), this, SLOT(deleteStateButtonClicked()));
-    m_Scene->addItem(deleteStateButton);
-        //Set start state button:
-    SquareButton *setStartStateButton = new SquareButton(this, QRectF(buttonX, buttonY + 76, 100, 30), "Set as START State");
-    connect(setStartStateButton, SIGNAL(clicked()), this, SLOT(setSTARTStateButtonClicked()));
-    m_Scene->addItem(setStartStateButton);
-        //Set as halt state button:
-    SquareButton *setHaltStateButton = new SquareButton(this, QRectF(buttonX, buttonY + 114, 100, 30), "Set as HALT State");
-    connect(setHaltStateButton, SIGNAL(clicked()), this, SLOT(setHALTStateButtonClicked()));
-    m_Scene->addItem(setHaltStateButton);
-
-    m_Scene->addRect(1393, 15, 110, 154, QPen(Qt::lightGray));
-    m_Scene->addRect(1431, 12, 40, 12, QPen(Qt::white), QBrush(Qt::white));
-    QGraphicsTextItem *scLabel = m_Scene->addText("State", QFont("Corbel light", 10.0));
-    scLabel->setPos(1432, -1);
-
-        //Add arrow button:
-    SquareButton *addArrowButton = new SquareButton(this, QRectF(buttonX, buttonY + 192, 100, 30), "Add Arrow");
-    connect(addArrowButton, SIGNAL(clicked()), this, SLOT(addArrowButtonClicked()));
-    m_Scene->addItem(addArrowButton);
-        //Add loop arrow button:
-    SquareButton *addLoopArrowButton = new SquareButton(this, QRectF(buttonX, buttonY + 230, 100, 30), "Add Loop Arrow");
-    connect(addLoopArrowButton, SIGNAL(clicked()), this, SLOT(addLoopArrowButtonClicked()));
-    m_Scene->addItem(addLoopArrowButton);
-        //Delete arrow button:
-    SquareButton *deleteArrowButton = new SquareButton(this, QRectF(buttonX, buttonY + 268, 100, 30), "Delete Arrow");
-    connect(deleteArrowButton, SIGNAL(clicked()), this, SLOT(deleteArrowButtonClicked()));
-    m_Scene->addItem(deleteArrowButton);
-
-    m_Scene->addRect(1393, 207, 110, 116, QPen(Qt::lightGray));
-    m_Scene->addRect(1430, 206, 40, 12, QPen(Qt::white), QBrush(Qt::white));
-    QGraphicsTextItem *acLabel = m_Scene->addText("Arrow", QFont("Corbel light", 10.0));
-    acLabel->setPos(1430, 192);
-
-        //Build button:
-    SquareButton *buildButton = new SquareButton(this, QRectF(buttonX, buttonY + 344, 100, 30), "Build");
-    connect(buildButton, SIGNAL(clicked()), this, SLOT(buildButtonClicked()));
-    m_Scene->addItem(buildButton);
-        //Test input button:
-    SquareButton *testInputButton = new SquareButton(this, QRectF(buttonX, buttonY + 382, 100, 30), "Test Input");
-    connect(testInputButton, SIGNAL(clicked()), this, SLOT(testInputButtonClicked()));
-    m_Scene->addItem(testInputButton);
-
-    m_Scene->addRect(1393, 359, 110, 78, QPen(Qt::lightGray));
-    m_Scene->addRect(1425, 359, 46, 12, QPen(Qt::white), QBrush(Qt::white));
-    QGraphicsTextItem *pcLabel = m_Scene->addText("Process", QFont("Corbel light", 10.0));
-    pcLabel->setPos(1425, 344);
-
-    //Clear scene button:
-    SquareButton *clearButton = new SquareButton(this, QRectF(buttonX, buttonY + 454, 100, 30), "Clear Scene");
-    connect(clearButton, SIGNAL(clicked()), this, SLOT(clearSceneButtonClicked()));
-    m_Scene->addItem(clearButton);
-
-    m_Scene->addRect(1393, 469, 110, 40, QPen(Qt::lightGray));
-    m_Scene->addRect(1429, 465, 35, 12, QPen(Qt::white), QBrush(Qt::white));
-    QGraphicsTextItem *cscLabel = m_Scene->addText("Clear", QFont("Corbel light", 10.0));
-    cscLabel->setPos(1430, 455);
-
-    //Exit button:
-    SquareButton *exitButton = new SquareButton(this, QRectF(buttonX, buttonY + 528, 100, 30), "Exit");
-    connect(exitButton, SIGNAL(clicked()), this, SLOT(exitButtonClicked()));
-    m_Scene->addItem(exitButton);
-
-    m_Scene->addRect(1393, 543, 110, 40, QPen(Qt::lightGray));
-    m_Scene->addRect(1433, 538, 28, 12, QPen(Qt::white), QBrush(Qt::white));
-    QGraphicsTextItem *ecLabel = m_Scene->addText("Exit", QFont("Corbel light", 10.0));
-    ecLabel->setPos(1434, 528);
+    connect(ui->addStateButton, SIGNAL(clicked(bool)), this, SLOT(addStateButtonClicked()));
+    connect(ui->deleteStateButton, SIGNAL(clicked()), this, SLOT(deleteStateButtonClicked()));
+    connect(ui->setAsStartButton, SIGNAL(clicked()), this, SLOT(setSTARTStateButtonClicked()));
+    connect(ui->setAsHaltButton, SIGNAL(clicked()), this, SLOT(setHALTStateButtonClicked()));
+    connect(ui->addArrowButton, SIGNAL(clicked()), this, SLOT(addArrowButtonClicked()));
+    connect(ui->addLoopArrowButton, SIGNAL(clicked()), this, SLOT(addLoopArrowButtonClicked()));
+    connect(ui->deleteArrowButton, SIGNAL(clicked()), this, SLOT(deleteArrowButtonClicked()));
+    connect(ui->testInputButton, SIGNAL(clicked()), this, SLOT(testInputButtonClicked()));
+    connect(ui->buildButton, SIGNAL(clicked()), this, SLOT(buildButtonClicked()));
+    connect(ui->clearSceneButton, SIGNAL(clicked()), this, SLOT(clearSceneButtonClicked()));
+    connect(ui->exitButton, SIGNAL(clicked()), this, SLOT(exitButtonClicked()));
 
     //Input line edit:
-    ui->inputLineEdit->setFixedWidth(1400);
+    ui->inputLineEdit->setMaximumWidth(2000);
+    ui->inputLineEdit->setMinimumWidth(500);
 
     //Set up spawn box:
     m_SpawnBox = new SquareSpawnBox(5, 5, 60, 60, nullptr);
@@ -180,10 +114,11 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
 
     //Setup the tape scene:
     m_TapeScene = new QGraphicsScene(this);
-    m_TapeScene->setSceneRect(0, 0, 50 * 40 + 20, 80);
 
     //Set up tape view:
-    ui->tapeGraphicsView->setFixedSize(1520, 100);
+    ui->tapeGraphicsView->setMinimumWidth(500);
+    ui->tapeGraphicsView->setMaximumHeight(80);
+    ui->tapeGraphicsView->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     ui->tapeGraphicsView->setRenderHint(QPainter::Antialiasing);
     ui->tapeGraphicsView->setScene(m_TapeScene);
     ui->tapeGraphicsView->horizontalScrollBar()->setValue(ui->tapeGraphicsView->horizontalScrollBar()->minimum());
@@ -192,18 +127,18 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
     qreal offset = 0;
     for(int i = 0; i < m_TapeLength; i++)
     {
-        SquareTapeCell *temp = new SquareTapeCell(QRectF(5 + offset,30, 40, 40));
+        SquareTapeCell *temp = new SquareTapeCell(QRectF(5 + offset, 16, m_CellWidth, m_CellWidth));
         m_Tape.append(temp);
         temp->setLabel("-");
         m_TapeScene->addItem(temp);
-        offset += 40;
+        offset += m_CellWidth;
     }
 
     //Set up tape head:
     m_TapeHead = new TapeHead(this);
     m_TapeScene->addItem(m_TapeHead);
-    m_TapeHeadStartXPos = 25 - m_TapeHead->sceneBoundingRect().width()/2.0;
-    m_TapeHead->setPos(m_TapeHeadStartXPos, 12);
+    m_TapeHeadStartXPos = 5 + (m_CellWidth / 2.0) - m_TapeHead->sceneBoundingRect().width()/2.0;
+    m_TapeHead->setPos(m_TapeHeadStartXPos, 1);
 
     //Set up timers:
     m_MoveLeftTimer = new QTimer(this);
@@ -217,7 +152,6 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
     m_PauseTimer = new QTimer(this);
     m_PauseTimer->setInterval(500);
     connect(m_PauseTimer, SIGNAL(timeout()), this, SLOT(unpause()));
-
     connect(this, SIGNAL(doneMoving()), this, SLOT(play()));
 
     //Summary page:
@@ -252,13 +186,28 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
 
 TuringMachineWindow::~TuringMachineWindow()
 {
+    if(m_SettingsChanged)
+    {
+        //Save the new Settings:
+        QFile saveFile("TMS.settings");
+        if(saveFile.open(QIODevice::WriteOnly))
+        {
+            QTextStream outStream(&saveFile);
+            outStream << m_SavePath << '\n';
+            outStream << m_TapeLength << '\n';
+            outStream << m_AHCColor.name() << '\n';
+            outStream << m_CSCColor.name() << '\n';
+            saveFile.close();
+        }
+    }
+
     delete ui;
 }
 
 void TuringMachineWindow::clearTapeView()
 {
     //Move the tape head back to the start:
-    m_TapeHead->setPos(m_TapeHeadStartXPos, 12);
+    m_TapeHead->setPos(m_TapeHeadStartXPos, 1);
 
     //Replace all letter in the tape with blanks:
     for(int i = 0; i < m_TapeLength; i++)
@@ -271,15 +220,10 @@ void TuringMachineWindow::clearTapeView()
 
 void TuringMachineWindow::setupSummaryPage()
 {
-    m_SummaryPageScene = new QGraphicsScene(this);
-    m_SummaryPageScene->setSceneRect(QRectF(0, 0, 1501, 601));
-    ui->summaryGraphicsView->setScene(m_SummaryPageScene);
-
     //Summary table view:
-    m_SummaryTable = new QTableView;
-    m_SummaryTable->setFixedSize(600, 515);
-    m_SummaryTable->setFrameStyle(QFrame::Raised);
-    m_SummaryTable->setFont(QFont("Corbel", 11));
+    ui->summaryTable->setFrameStyle(QFrame::Raised);
+    ui->summaryTable->setFont(QFont("Corbel", 11));
+    ui->summaryTable->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
     m_TableModel = new QStandardItemModel(this);
 
@@ -291,158 +235,28 @@ void TuringMachineWindow::setupSummaryPage()
     headerLabels.append("Write");
     headerLabels.append("Move");
     m_TableModel->setHorizontalHeaderLabels(headerLabels);
-    m_SummaryTable->setModel(m_TableModel);
+    ui->summaryTable->setModel(m_TableModel);
 
-    //Summary table label:
-    QGraphicsTextItem *tableLabel = m_SummaryPageScene->addText("Summary Table", QFont("Corbel Light"));
-    QFont tableLabelFont = tableLabel->font();
-    tableLabelFont.setUnderline(true);
-    tableLabel->setFont(tableLabelFont);
-    tableLabel->setPos(17,5);
-
-    QGraphicsProxyWidget *tableProxy = m_SummaryPageScene->addWidget(m_SummaryTable);
-    tableProxy->setPos(0,40);
-
-    //Separator line:
-    m_SummaryPageScene->addLine(QLineF(600, 25, 600, 580), QPen(Qt::lightGray));
-
-    //Execution summary table:
-    m_ESView = new QGraphicsView;
-    m_ESView->setFixedSize(820, 480);
-    m_ESView->setFrameStyle(QFrame::Raised);
-    m_ESView->setRenderHint(QPainter::Antialiasing);
-    QGraphicsProxyWidget *esViewProxy = m_SummaryPageScene->addWidget(m_ESView);
-    esViewProxy->setPos(645, 30);
-
-    m_ESScene = new QGraphicsScene(0, 0, 800, 480, this);
-    m_ESView->setScene(m_ESScene);
-
-    //Execution summary label:
-    QGraphicsTextItem *esTableLabel = m_SummaryPageScene->addText("Execution Summary", QFont("Corbel Light"));
-    QFont esTableLabelFont = esTableLabel->font();
-    esTableLabelFont.setUnderline(true);
-    esTableLabel->setFont(esTableLabelFont);
-    esTableLabel->setPos(660,5);
-
-    //Accepted and rejected rects:
-    m_AcceptedRect = m_SummaryPageScene->addRect(665, 515, 200, 30, QPen(Qt::lightGray));
-    m_CrashedRect = m_SummaryPageScene->addRect(1242, 515, 200, 30, QPen(Qt::lightGray));
-    m_AcceptedRect->setBrush(QBrush(Qt::lightGray));
-    m_CrashedRect->setBrush(QBrush(Qt::lightGray));
-
-    QGraphicsTextItem *m_AcceptedText =  m_SummaryPageScene->addText("Accepted", QFont("Corbel"));
-    m_AcceptedText->setPos(665 + m_AcceptedRect->sceneBoundingRect().width()/2 - m_AcceptedText->sceneBoundingRect().width()/2, 515);
-    QGraphicsTextItem *m_RejectedText =  m_SummaryPageScene->addText("Crashed", QFont("Corbel"));
-    m_RejectedText->setPos(1242 + m_CrashedRect->sceneBoundingRect().width()/2 - m_RejectedText->sceneBoundingRect().width()/2, 515);
-
-    //Crash reason:
-    QGraphicsTextItem *cr = m_SummaryPageScene->addText("Reason for crash:", QFont("Corbel Light"));
-    cr->setPos(650, 565);
-    m_CrashMessegeEdit = new QLineEdit;
-    m_CrashMessegeEdit->setFixedSize(600, 25);
-    m_CrashMessegeEdit->setFont(QFont("Corbel Light", 12.0));
-    m_CrashMessegeEdit->setText("Reason for crash will appear here");
-    m_CrashMessegeEdit->setStyleSheet("background-color: white; color: black;");
-    m_CrashMessegeEdit->setEnabled(false);
-    QGraphicsProxyWidget *cmeProxy = m_SummaryPageScene->addWidget(m_CrashMessegeEdit);
-    cmeProxy->setPos(850, 565);
 }
 
 void TuringMachineWindow::setupOptionsPage()
 {
-    //Page configuration:
-    m_OptionsScene = new QGraphicsScene(this);
-    m_OptionsScene->setSceneRect(QRectF(0, 0, 1501, 601));
-    ui->optionsGraphicsView->setScene(m_OptionsScene);
-    ui->optionsGraphicsView->setFont(QFont("Corbel Light"));
+    // Connect Buttons
+    ui->saveLocationLineEdit->setText(m_SavePath);
+    connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(getSaveFileLocation()));
+    connect(ui->playSpeedSpinBox, SIGNAL(valueChanged(int)), this, SLOT(speedSpinBoxValueChanged(int)));
+    connect(ui->tapeLengthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(tapeLengthSpinBoxValueChanged(int)));
+    connect(ui->AHCButton, SIGNAL(clicked()), this, SLOT(changeAHCColor()));
+    connect(ui->CSCButton, SIGNAL(clicked()), this, SLOT(changeCSCColor()));
 
-    //Save location:
-    //m_OptionsScene->addRect(0, 15, 1300, 50, QPen(Qt::gray, 1.0));
-    QGraphicsTextItem *slText = m_OptionsScene->addText("Save Location: ", QFont("Corbel Light", 12));
-    slText->setDefaultTextColor(Qt::darkGray);
-    slText->setPos(10, 25);
-
-    m_SaveLocationLineEdit = new QLineEdit;
-    m_SaveLocationLineEdit->setFont(QFont("Corbel Light", 12));
-    m_SaveLocationLineEdit->setEnabled(false);
-    m_SaveLocationLineEdit->setStyleSheet("background-color: white;");
-    m_SaveLocationLineEdit->setText(m_SavePath);
-    m_SaveLocationLineEdit->setFixedSize(1000, 40);
-    QGraphicsProxyWidget *slleProxy = m_OptionsScene->addWidget(m_SaveLocationLineEdit);
-    slleProxy->setPos(180, 20);
-
-    PixmapButton *browseButton = new PixmapButton(this, ":/new/prefix1/Images and Icons/browse icon.png", ":/new/prefix1/Images and Icons/browse icon.png");
-    browseButton->setPos(1180, 23);
-    browseButton->setScale(0.8);
-    connect(browseButton, SIGNAL(clicked()), this, SLOT(getSaveFileLocation()));
-    m_OptionsScene->addItem(browseButton);
-
-    //Separator line:
-    m_OptionsScene->addLine(110, 85, 1380, 85, QPen(Qt::gray, 1.0));
-
-    //Other options:
-    //m_OptionsScene->addRect(0, 100, 1300, 50, QPen(Qt::gray));
-    QGraphicsTextItem *psText = m_OptionsScene->addText("Play Speed: ", QFont("Corbel Light", 12));
-    psText->setDefaultTextColor(Qt::darkGray);
-    psText->setPos(10, 110);
-
-    m_SpeedSpinBox = new QSpinBox;
-    m_SpeedSpinBox->setValue(1);
-    m_SpeedSpinBox->setFixedSize(80, 40);
-    m_SpeedSpinBox->setMinimum(1);
-    m_SpeedSpinBox->setMaximum(9);
-    connect(m_SpeedSpinBox, SIGNAL(valueChanged(int)), this, SLOT(speedSpinBoxValueChanged(int)));
-    QGraphicsProxyWidget *ssbProxy = m_OptionsScene->addWidget(m_SpeedSpinBox);
-    ssbProxy->setFont(QFont("Corbel Light", 12));
-    ssbProxy->setPos(300, 105);
-
-    //m_OptionsScene->addRect(0, 160, 1300, 50, QPen(Qt::gray));
-    QGraphicsTextItem *tlText = m_OptionsScene->addText("Tape Length: ", QFont("Corbel Light", 12));
-    tlText->setDefaultTextColor(Qt::darkGray);
-    tlText->setPos(10, 170);
-
-    m_TapeLengthSpinBox = new QSpinBox;
-    m_TapeLengthSpinBox->setValue(20);
-    m_TapeLengthSpinBox->setFixedSize(80, 40);
-    m_TapeLengthSpinBox->setMinimum(50);
-    m_TapeLengthSpinBox->setMaximum(200);
-    connect(m_TapeLengthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(tapeLengthSpinBoxValueChanged(int)));
-    QGraphicsProxyWidget *tlsbProxy = m_OptionsScene->addWidget(m_TapeLengthSpinBox);
-    tlsbProxy->setFont(QFont("Corbel Light", 12));
-    tlsbProxy->setPos(300, 165);
-
-    //m_OptionsScene->addRect(0, 220, 1300, 50, QPen(Qt::gray));
-    QGraphicsTextItem *ahcText = m_OptionsScene->addText("Arrow Highlight Color: ", QFont("Corbel Light", 12));
-    ahcText->setDefaultTextColor(Qt::darkGray);
-    ahcText->setPos(10, 230);
-
-    //AHC label and color box:
-    m_OptionsScene->addRect(300, 225, 200, 40, QPen(Qt::gray));
-    m_AHCButton = new ColorButton(QRectF(525, 225, 50, 40), this);
-    m_AHCButton->setBrush(QBrush(m_AHCColor));
-    m_AHCButton->setPen(QPen(m_AHCColor));
-    connect(m_AHCButton, SIGNAL(clicked()), this, SLOT(changeAHCColor()));
-    m_OptionsScene->addItem(m_AHCButton);
-
-    m_AHCColorLabel = m_OptionsScene->addText(m_AHCColor.name(), QFont("corbel Light", 14));
-    m_AHCColorLabel->setDefaultTextColor(Qt::darkGray);
-    m_AHCColorLabel->setPos(305, 226);
-
-    //m_OptionsScene->addRect(0, 280, 1300, 50, QPen(Qt::gray));
-    QGraphicsTextItem *spText = m_OptionsScene->addText("Current State Color: ", QFont("Corbel Light", 12));
-    spText->setDefaultTextColor(Qt::darkGray);
-    spText->setPos(10, 290);
-
-    m_OptionsScene->addRect(300, 285, 200, 40, QPen(Qt::gray));
-    m_CSCButton = new ColorButton(QRectF(525, 285, 50, 40), this);
-    m_CSCButton->setBrush(QBrush(m_CSCColor));
-    m_CSCButton->setPen(QPen(m_CSCColor));
-    connect(m_CSCButton, SIGNAL(clicked()), this, SLOT(changeCSCColor()));
-    m_OptionsScene->addItem(m_CSCButton);
-
-    m_CSCColorLabel = m_OptionsScene->addText(m_CSCColor.name(), QFont("corbel Light", 14));
-    m_CSCColorLabel->setDefaultTextColor(Qt::darkGray);
-    m_CSCColorLabel->setPos(305, 286);
+    ui->AHCButton->setStyleSheet(QString("QPushButton {background-color: %1; border-radius: 3;}"
+                                         "QPushButton:hover { border: 1px solid #ffffff;}"
+                                         "QPushButton:pressed { border: 2px solid #ffffff; }").arg(m_AHCColor.name()));
+    ui->CSCButton->setStyleSheet(QString("QPushButton {background-color: %1; border-radius: 3;}"
+                                         "QPushButton:hover { border: 1px solid #ffffff;}"
+                                         "QPushButton:pressed { border: 2px solid #ffffff; }").arg(m_CSCColor.name()));
+    ui->AHC_Label->setText(m_AHCColor.name());
+    ui->CSC_Label->setText(m_CSCColor.name());
 }
 
 void TuringMachineWindow::setupHelpPage()
@@ -468,103 +282,12 @@ void TuringMachineWindow::setupHelpPage()
     }
 
     //Page configurations:
-    m_HelpScene = new QGraphicsScene(this);
-    m_HelpScene->setSceneRect(QRectF(0, 0, 1501, 601));
-    ui->helpGraphicsView->setScene(m_HelpScene);
-    ui->helpGraphicsView->setFont(QFont("Corbel Light"));
-
-    //About section:
-    QGraphicsTextItem *aboutMainLabel = m_HelpScene->addText("About");
-    QFont aboutLabelFont;
-    aboutLabelFont.setFamily("Corbel Light");
-    aboutLabelFont.setPointSizeF(15.0);
-    aboutLabelFont.setItalic(true);
-    aboutMainLabel->setFont(aboutLabelFont);
-    aboutMainLabel->setDefaultTextColor(Qt::darkGray);
-    aboutMainLabel->setPos(720, 5);
-
-        //Separator line:
-    m_HelpScene->addLine(10, 35, 1480, 35, QPen(Qt::gray, 1.0));
-
-    //About box:234
-    //m_HelpScene->addRect(360, 35, 760, 40, QPen(Qt::gray, 0.5));
-        //About app button:
-    SquareButton *aboutAppButton = new SquareButton(this, QRectF(364, 40, 250, 30), "About App");
-    connect(aboutAppButton, SIGNAL(clicked()), this, SLOT(aboutAppButtonClicked()));
-    m_HelpScene->addItem(aboutAppButton);
-        //About Qt button:
-    SquareButton *aboutQTButton = new SquareButton(this, QRectF(615, 40, 250, 30), "About Qt");
-    connect(aboutQTButton, SIGNAL(clicked()), this, SLOT(aboutQtButtonClicked()));
-    m_HelpScene->addItem(aboutQTButton);
-        //About Author button:
-    SquareButton *aboutAuthorButton = new SquareButton(this, QRectF(866, 40, 250, 30), "About Author");
-    connect(aboutAuthorButton, SIGNAL(clicked()), this, SLOT(aboutAuthorButtonClicked()));
-    m_HelpScene->addItem(aboutAuthorButton);
-
-    //Separator line:
-    m_HelpScene->addLine(10, 75, 1480, 75, QPen(Qt::gray, 1.0));
-
-    //License section:
-    QGraphicsTextItem *licenseMainLabel = m_HelpScene->addText("License");
-    QFont licenseMainFont;
-    licenseMainFont.setFamily("Corbel Light");
-    licenseMainFont.setPointSizeF(15.0);
-    licenseMainFont.setItalic(true);
-    licenseMainLabel->setFont(licenseMainFont);
-    licenseMainLabel->setDefaultTextColor(Qt::darkGray);
-    licenseMainLabel->setPos(710, 85);
-        //Lisence Text Edit:
-    m_HelpScene->addRect(10, 120, 1470, 300, QPen(Qt::gray));
-    QTextEdit *licenseTextEdit1 = new QTextEdit;
-    licenseTextEdit1->setFixedSize(700, 288);
-    licenseTextEdit1->setStyleSheet("background-color: white");
-    licenseTextEdit1->setFrameStyle(QFrame::Raised);
-    licenseTextEdit1->setText(licenseMessage);
-    licenseTextEdit1->setFont(QFont("Corbel", 10));
-    licenseTextEdit1->setReadOnly(true);
-    QGraphicsProxyWidget *lteProxy = m_HelpScene->addWidget(licenseTextEdit1);
-    lteProxy->setPos(40, 122);
-
-    QTextEdit *licenseTextEdit2 = new QTextEdit;
-    licenseTextEdit2->setFixedSize(700, 288);
-    licenseTextEdit2->setStyleSheet("background-color: white");
-    licenseTextEdit2->setFrameStyle(QFrame::Raised);
-    licenseTextEdit2->setText(licenseMessage2);
-    licenseTextEdit2->setFont(QFont("Corbel", 10));
-    licenseTextEdit2->setReadOnly(true);
-    QGraphicsProxyWidget *lte2Proxy = m_HelpScene->addWidget(licenseTextEdit2);
-    lte2Proxy->setPos(750, 122);
-
-    //Separator line:
-    m_HelpScene->addLine(10, 115, 1480, 115, QPen(Qt::gray, 1.0));
-
-    //User manual box:
-    QGraphicsTextItem *manualLabel = m_HelpScene->addText("User Manual", licenseMainFont);
-    manualLabel->setDefaultTextColor(Qt::darkGray);
-    manualLabel->setPos(690, 430);
-
-    //Separator line:
-    m_HelpScene->addLine(10, 460, 1480, 460, QPen(Qt::gray, 1.0));
-    m_HelpScene->addRect(10, 465, 1470, 136, QPen(Qt::gray));
-
-    //Manual Button:
-    SquareButton *openManualButton = new SquareButton(this, QRectF(10, 466, 500, 134), "Open User Manual");
-    connect(openManualButton, SIGNAL(clicked()), this, SLOT(openUserManualButtonClicked()));
-    m_HelpScene->addItem(openManualButton);
-        //Logo
-    QPixmap logoPic = QPixmap(":/new/prefix1/Images and Icons/sim3.png");
-    QGraphicsPixmapItem *logo = m_HelpScene->addPixmap(logoPic.scaled(logoPic.width()/2.8, logoPic.height()/2.8));
-    logo->setScale(0.8);
-    logo->setOpacity(0.2);
-    logo->setPos(680, 460);
-    QGraphicsTextItem *appName = m_HelpScene->addText("TM SIMULATOR");
-    QFont appNameFont;
-    appNameFont.setFamily("Corbel Light");
-    appNameFont.setStretch(200);
-    appNameFont.setPointSizeF(20.0);
-    appName->setFont(appNameFont);
-    appName->setOpacity(0.2);
-    appName->setPos(850, 520);
+    connect(ui->aboutAppButton, SIGNAL(clicked()), this, SLOT(aboutAppButtonClicked()));
+    connect(ui->aboutQtButton, SIGNAL(clicked()), this, SLOT(aboutQtButtonClicked()));
+    connect(ui->aboutAuthorButton, SIGNAL(clicked()), this, SLOT(aboutAuthorButtonClicked()));
+    connect(ui->openUserManualButton, SIGNAL(clicked()), this, SLOT(openUserManualButtonClicked()));
+    ui->license1TextEdit->setPlainText(licenseMessage);
+    ui->license2TextEdit->setPlainText(licenseMessage2);
 }
 
 void TuringMachineWindow::populateSummaryTable(QStringList tableData)
@@ -582,7 +305,7 @@ void TuringMachineWindow::populateSummaryTable(QStringList tableData)
         row.append(new QStandardItem(tableData[i][8]));
         row.append(new QStandardItem(tableData[i][10]));
         m_TableModel->appendRow(row);
-        m_SummaryTable->setRowHeight(i, 35);
+        ui->summaryTable->setRowHeight(i, 35);
     }
 }
 
@@ -591,9 +314,37 @@ void TuringMachineWindow::displayTestSummary()
     //Display the crash messege if any:
     QString crashMessege = m_Processor->getCrashString();
     if(crashMessege == "")
-        m_CrashMessegeEdit->setText("Input was accepted. No crash messge.");
+        ui->crashMessageLabel->setText("Input was accepted. No crash message.");
     else
-        m_CrashMessegeEdit->setText(crashMessege);
+        ui->crashMessageLabel->setText(crashMessege);
+
+    //Set accept or reject color on box:
+    if(crashMessege == "")
+    {
+        ui->acceptedButton->setStyleSheet("QPushButton {"
+                                          "color: rgb(255, 255, 255);"
+                                          "background-color: #007016;"
+                                          "}"
+                                          );
+        ui->rejectedButton->setStyleSheet("QPushButton {"
+                                          "color: rgb(255, 255, 255);"
+                                          "background-color: rgb(61, 61, 61);"
+                                          "}"
+                                          );
+    }
+    else
+    {
+        ui->acceptedButton->setStyleSheet("QPushButton {"
+                                          "color: rgb(255, 255, 255);"
+                                          "background-color: rgb(61, 61, 61);"
+                                          "}"
+                                          );
+        ui->rejectedButton->setStyleSheet("QPushButton {"
+                                          "color: rgb(255, 255, 255);"
+                                          "background-color: #7f0000;"
+                                          "}"
+                                          );
+    }
 
     //Retrieve and display the tape and transition records:
     QStringList transitionRecord = m_Processor->getTransitionRecord().split('\n', Qt::SkipEmptyParts);
@@ -601,92 +352,63 @@ void TuringMachineWindow::displayTestSummary()
 
     if(!transitionRecord.isEmpty() && !tapeRecord.isEmpty())
     {
-        m_ESScene->clear();
         //Declare variables:
         QStringList recordDetail;
         QStringList transitionEntry;
-        QGraphicsTextItem *tempText;
         QTextEdit *textEdit;
         QFont inpTextFont;
-        int height = 400;
-        int yOffset = 0;
         int index = 0;
 
         //Set up the font:
         inpTextFont.setFamily("Corbel");
         inpTextFont.setLetterSpacing(QFont::AbsoluteSpacing, 5);
 
-        //Set up the scene size:
-        if(tapeRecord.length() > 10)
-            height = 45 * tapeRecord.length();
-        m_ESScene->setSceneRect(0, 0, 800, height);
+        QString transitionText = "";
+        QListWidgetItem *item = nullptr;
+        ui->listWidget->setSizeAdjustPolicy(QListWidget::AdjustToContents);
+        ui->listWidget->clear();
 
         //Display all test result data:
         for(int i = 0; i< tapeRecord.length(); i++)
         {
-            //Tape record:
-            m_ESScene->addRect(10, 5 + yOffset, 470, 35, QPen(Qt::lightGray));
-            recordDetail = tapeRecord[i].split('-', Qt::SkipEmptyParts);
-            index = recordDetail[1].toInt();
-
-            //Create the line edit item and set show it on the scene:
-            textEdit = new QTextEdit;
-            textEdit->setFixedSize(400, 30);
-            textEdit->setFrameStyle(QFrame::Raised);
-            textEdit->setFont(inpTextFont);
-            textEdit->setText(recordDetail[0]);
-
-            //Change the color of the letter at the index to red:
-            QTextCursor cursor = textEdit->textCursor();
-            cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, index);
-            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
-            QTextCharFormat chFormat;
-            chFormat.setTextOutline(QPen(Qt::red));
-            chFormat.setFontWeight(1);
-            cursor.setCharFormat(chFormat);
-
-            QGraphicsProxyWidget *textEditProxy = m_ESScene->addWidget(textEdit);
-            textEditProxy->setPos(12, 7 + yOffset);
-
             if(i < tapeRecord.length() - 1)
             {
-                //Transition data:
+                // Add Tape data to the transition text
+                recordDetail = tapeRecord[i].split('-', Qt::SkipEmptyParts);
+                index = recordDetail[1].toInt();
+
+                //Add Transition data to the transition text
                 transitionEntry = transitionRecord[i].split(',', Qt::SkipEmptyParts);
+                transitionText += transitionEntry[0] + " ";
+                transitionText += transitionEntry[1] + " ";
+                transitionText += transitionEntry[2] + " ";
+                transitionText += transitionEntry[3] + " ";
+                transitionText += transitionEntry[4];
 
-                //From state:
-                m_ESScene->addRect(495, 5 + yOffset, 50, 35, QPen(Qt::lightGray));
-                tempText = m_ESScene->addText(transitionEntry[0]);
-                tempText->setPos(498, 7 + yOffset);
-                //To state:
-                m_ESScene->addRect(555, 5 + yOffset, 50, 35, QPen(Qt::lightGray));
-                tempText = m_ESScene->addText(transitionEntry[1]);
-                tempText->setPos(557, 7 + yOffset);
-                //Read:
-                m_ESScene->addRect(615, 5 + yOffset, 50, 35, QPen(Qt::lightGray));
-                tempText = m_ESScene->addText(transitionEntry[2]);
-                tempText->setPos(617, 7 + yOffset);
-                //Write:
-                m_ESScene->addRect(675, 5 + yOffset, 50, 35, QPen(Qt::lightGray));
-                tempText = m_ESScene->addText(transitionEntry[3]);
-                tempText->setPos(677, 7 + yOffset);
-                //Move
-                m_ESScene->addRect(735, 5 + yOffset, 50, 35, QPen(Qt::lightGray));
-                tempText = m_ESScene->addText(transitionEntry[4]);
-                tempText->setPos(737, 7 + yOffset);
-                yOffset += 45;
-            }
-        }
+                //Create the line edit item and set show it on the scene:
+                textEdit = new QTextEdit(this);
+                textEdit->setFrameStyle(QFrame::Raised);
+                textEdit->setFixedHeight(100);
+                textEdit->setFont(inpTextFont);
+                textEdit->setText(recordDetail[0] + "\t\t" + transitionText);
+                textEdit->setReadOnly(true);
+                textEdit->setMaximumWidth(ui->listWidget->width());
 
-        //Set accept or reject color on box:
-        if(crashMessege == "")
-        {
-            m_AcceptedRect->setBrush(QBrush(Qt::green));
-            m_CrashedRect->setBrush(QBrush(Qt::lightGray));
-        }
-        else
-        {
-            m_CrashedRect->setBrush(QBrush(Qt::red));
-            m_AcceptedRect->setBrush(QBrush(Qt::lightGray));
+                //Change the color of the letter at the index to red:
+                QTextCursor cursor = textEdit->textCursor();
+                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, index);
+                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
+                QTextCharFormat chFormat;
+                chFormat.setTextOutline(QPen(Qt::red));
+                chFormat.setFontWeight(1);
+                cursor.setCharFormat(chFormat);
+
+                item = new QListWidgetItem;
+                item->setSizeHint(QSize(item->sizeHint().width(), 30));
+                ui->listWidget->addItem(item);
+                ui->listWidget->setItemWidget(item, textEdit);
+                transitionText = "";
+           }
         }
     }
 }
@@ -701,8 +423,7 @@ void TuringMachineWindow::loadSettings()
         m_SavePath = inStream.readLine();
         QString tl = inStream.readLine();
         m_TapeLength = tl.toInt();
-        QString sp = inStream.readLine();
-        m_Speed = sp.toInt();
+        m_Speed = 1;
         m_AHCColor = QColor(inStream.readLine());
         m_CSCColor = QColor(inStream.readLine());
         loadFile.close();
@@ -713,7 +434,7 @@ void TuringMachineWindow::loadSettings()
         dir.mkdir("Saved TMs");
         m_SavePath = dir.path() + "/Saved TMs";
         m_TapeLength = 50;
-        m_Speed = 9;
+        m_Speed = 1;
         m_AHCColor = QColor("#55aa00");
         m_CSCColor = QColor("#55ffff");
     }
@@ -721,22 +442,6 @@ void TuringMachineWindow::loadSettings()
 
 void TuringMachineWindow::quitApp()
 {
-    if(m_SettingsChanged)
-    {
-        //Save the new Settings:
-        QFile saveFile("TMS.settings");
-        if(saveFile.open(QIODevice::WriteOnly))
-        {
-            QTextStream outStream(&saveFile);
-            outStream << m_SavePath << '\n';
-            outStream << m_TapeLength << '\n';
-            outStream << m_Speed << '\n';
-            outStream << m_AHCColorLabel->toPlainText() << '\n';
-            outStream << m_CSCColorLabel->toPlainText() << '\n';
-            saveFile.close();
-        }
-    }
-
     if(m_Modified)
     {
         QString message = "Your design has unsaved changes. If you do not save, the changes will be lost";
@@ -1086,7 +791,7 @@ void TuringMachineWindow::testInputButtonClicked()
             m_TapeCounter = 0;
             m_Count = 0;
 
-            m_TapeHead->setPos(25 - m_TapeHead->sceneBoundingRect().width()/2.0, 12);
+            m_TapeHeadStartXPos = 5 + (m_CellWidth / 2.0) - m_TapeHead->sceneBoundingRect().width()/2.0;
             this->play();
 
             //Display the test summary:
@@ -1095,7 +800,7 @@ void TuringMachineWindow::testInputButtonClicked()
         else
         {
             QString message = "There is a possible infinite loop in your TM.\n"
-                              "100000 read, write and move iterations where executed.\n"
+                              "1 000 000 read, write and move iterations where executed.\n"
                               "Please revise your TM design so as to remove the infinite loop.\n\n"
                               "Hint\n- See the help section for help identifying infinite loops.";
 
@@ -1116,16 +821,23 @@ void TuringMachineWindow::clearSceneButtonClicked()
     m_NumOfStates = 0;
     m_TM.clear();
     m_TableModel->setRowCount(0);
-    m_ESScene->clear();
     m_FileLoaded = false;
     m_LoadedFile = "";
     m_LoadedDescription = "";
 
     //Reset the summary page details:
-    m_AcceptedRect->setBrush(QBrush(Qt::lightGray));
-    m_CrashedRect->setBrush(QBrush(Qt::lightGray));
+    ui->acceptedButton->setStyleSheet("QPushButton {"
+                                        "color: rgb(255, 255, 255);"
+                                        "background-color: rgb(61, 61, 61);"
+                                    "}");
+    ui->rejectedButton->setStyleSheet("QPushButton {"
+                                      "color: rgb(255, 255, 255);"
+                                      "background-color: rgb(61, 61, 61);"
+                                      "}");
+
     m_NumOfStates = 0;
-    m_CrashMessegeEdit->setText("Reason for crash will appear here");
+    ui->crashMessageLabel->setText("Reason for crash will appear here");
+    ui->listWidget->clear();
 }
 
 void TuringMachineWindow::on_inputLineEdit_editingFinished()
@@ -1209,9 +921,9 @@ void TuringMachineWindow::moveTapeHead()
 
 void TuringMachineWindow::moveLeft()
 {
-    if(m_MoveCounter < 40)
+    if(m_MoveCounter < m_CellWidth)
     {
-        m_TapeHead->setPos(m_TapeHead->scenePos().x() - 1, m_TapeHead->scenePos().y());
+        m_TapeHead->setPos(m_TapeHead->pos().x() - 1, m_TapeHead->scenePos().y());
         m_MoveCounter++;
     }
     else
@@ -1225,7 +937,7 @@ void TuringMachineWindow::moveLeft()
 
 void TuringMachineWindow::moveRight()
 {
-    if(m_MoveCounter < 40)
+    if(m_MoveCounter < m_CellWidth)
     {
         m_TapeHead->setPos(m_TapeHead->scenePos().x() + 1, m_TapeHead->scenePos().y());
         m_MoveCounter++;
@@ -1554,11 +1266,14 @@ void TuringMachineWindow::on_actionExit_triggered()
 void TuringMachineWindow::getSaveFileLocation()
 {
     QString sfl = QFileDialog::getExistingDirectory(this, "Choose save location", m_SavePath);
-    QDir loc(sfl);
-    if(loc.exists())
-        m_SavePath = sfl;
-    m_SaveLocationLineEdit->setText(sfl);
-    m_SettingsChanged = true;
+    if(sfl != "")
+    {
+        QDir loc(sfl);
+        if(loc.exists())
+            m_SavePath = sfl;
+        m_SaveLocationLineEdit->setText(sfl);
+        m_SettingsChanged = true;
+    }
 }
 
 void TuringMachineWindow::changeAHCColor()
@@ -1566,10 +1281,11 @@ void TuringMachineWindow::changeAHCColor()
     QColor newColor = QColorDialog::getColor(m_AHCColor, this, "Pick a color");
     if(newColor.isValid())
     {
-        m_AHCButton->setBrush(QBrush(newColor));
-        m_AHCButton->setPen(QPen(newColor));
+        ui->AHCButton->setStyleSheet(QString("QPushButton {background-color: %1; border-radius: 3;}"
+                                             "QPushButton:hover { border: 1px solid #ffffff;}"
+                                             "QPushButton:pressed { border: 2px solid #ffffff; }").arg(newColor.name()));
         m_AHCColor = newColor;
-        m_AHCColorLabel->setPlainText(m_AHCColor.name());
+        ui->AHC_Label->setText(newColor.name());
 
         for(MyStateItem *s : m_TM)
             s->setConnectedArrowColor(newColor);
@@ -1582,10 +1298,14 @@ void TuringMachineWindow::changeCSCColor()
     QColor newColor = QColorDialog::getColor(m_CSCColor, this, "Pick a color");
     if(newColor.isValid())
     {
-        m_CSCButton->setBrush(QBrush(newColor));
-        m_CSCButton->setPen(QPen(newColor));
+        ui->CSCButton->setStyleSheet(QString("QPushButton {background-color: %1; border-radius: 3;}"
+                                             "QPushButton:hover { border: 1px solid #ffffff;}"
+                                             "QPushButton:pressed { border: 2px solid #ffffff; }").arg(m_CSCColor.name()));
         m_CSCColor = newColor;
-        m_CSCColorLabel->setPlainText(m_CSCColor.name());
+        ui->CSC_Label->setText(newColor.name());
+
+        m_CSCColor = newColor;
+        ui->CSC_Label->setText(m_CSCColor.name());
         m_SettingsChanged = true;
     }
 }
@@ -1611,24 +1331,29 @@ void TuringMachineWindow::tapeLengthSpinBoxValueChanged(int val)
 {
     m_TapeLength = val;
 
-    //Clear the scene:
-    for(SquareTapeCell *s : m_Tape)
-        m_TapeScene->removeItem(s);
+    // Clear tape scene
     m_Tape.clear();
 
-    //Resize the scene:
-    int sceneWidth = m_TapeLength * 40 + 20;
-    m_TapeScene->setSceneRect(0, 0, sceneWidth, 80);
+    //Recreate tape scene
+    if(m_TapeScene)
+        delete m_TapeScene;
+    m_TapeScene = new QGraphicsScene(this);
+    ui->tapeGraphicsView->setScene(m_TapeScene);
+
+    //Set up tape head:
+    m_TapeHead = new TapeHead(this);
+    m_TapeScene->addItem(m_TapeHead);
+    m_TapeHead->setPos(m_TapeHeadStartXPos, 1);
 
     //Set up the tape:
     qreal offset = 0;
     for(int i = 0; i < m_TapeLength; i++)
     {
-        SquareTapeCell *temp = new SquareTapeCell(QRectF(5 + offset,30, 40, 40));
+        SquareTapeCell *temp = new SquareTapeCell(QRectF(5 + offset, 16, m_CellWidth, m_CellWidth));
         m_Tape.append(temp);
         temp->setLabel("-");
         m_TapeScene->addItem(temp);
-        offset += 40;
+        offset += m_CellWidth;
     }
     m_SettingsChanged = true;
 }

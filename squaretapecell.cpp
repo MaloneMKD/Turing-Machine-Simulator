@@ -22,8 +22,9 @@ SquareTapeCell::SquareTapeCell(QRectF rect)
 {
     //Initialize label:
     m_Label = new QGraphicsTextItem("a", this);
-    m_Label->setPos(this->sceneBoundingRect().center().x() - 16,
-                    this->sceneBoundingRect().center().y()/1.8);
+   /* m_Label->setPos(this->sceneBoundingRect().center().x() - this->scenePos().x(),
+                    this->sceneBoundingRect().center().y() - this->scenePos().y());*/
+    m_Label->setPos(this->rect().x(), this->rect().y() - m_Label->sceneBoundingRect().height() / 2.5);
     m_Label->setScale(3.0);
     QFont font = m_Label->font();
     font.setPointSizeF(4.0);
