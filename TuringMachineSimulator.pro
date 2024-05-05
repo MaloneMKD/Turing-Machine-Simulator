@@ -25,6 +25,7 @@ SOURCES += \
     tapehead.cpp \
     tmedge.cpp \
     tmprocessor.cpp \
+    tmsscene.cpp \
     tmstate.cpp \
     turingmachine.cpp \
     turingmachinewindow.cpp
@@ -45,7 +46,10 @@ HEADERS += \
     tapehead.h \
     tmedge.h \
     tmprocessor.h \
+    tmsscene.h \
     tmstate.h \
+    tmsview \
+    tmsview \
     turingmachine.h \
     turingmachinewindow.h
 

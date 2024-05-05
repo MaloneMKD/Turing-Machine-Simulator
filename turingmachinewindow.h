@@ -34,6 +34,7 @@
 #include "tapecell.h"
 #include "tapehead.h"
 #include "colorbutton.h"
+#include "tmsscene.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -61,6 +62,8 @@ public:
 
 signals:
     void doneMoving();
+
+    void scaleChanged();
 
 private slots:
 
@@ -130,9 +133,11 @@ private slots:
 
     void fadeOutLogo();
 
+    void resetConnections();
+
 private:
     Ui::TuringMachineWindow *ui;
-    QGraphicsScene *m_Scene;
+    TMSScene *m_Scene;
     QGraphicsScene *m_TapeScene;
     QGraphicsScene *m_SummaryPageScene;
     QGraphicsScene *m_ESScene;

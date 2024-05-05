@@ -78,12 +78,15 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
     m_CellWidth = 32;
 
     //Setup the TM scene:
-    m_Scene = new QGraphicsScene(this);
+    m_Scene = new TMSScene(this);
     ui->graphicsView->setScene(m_Scene);
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);
     ui->graphicsView->setFrameStyle(QFrame::StyledPanel);
     ui->graphicsView->setFrameShadow(QFrame::Raised);
     ui->graphicsView->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    ui->graphicsView->setFocus();
+    //ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     //Setup variables:
     m_NumOfStates = 0;
@@ -182,6 +185,9 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
     connect(m_LogoTimer, SIGNAL(timeout()), this, SLOT(fadeOutLogo()));
     m_TimeCounter = 0;
     m_LogoTimer->start();
+
+    // TODO Fix display test summary function
+    // TODO Add controls menu to tell how to zoom, and perform other controls.
 }
 
 TuringMachineWindow::~TuringMachineWindow()
@@ -1521,5 +1527,10 @@ void TuringMachineWindow::fadeOutLogo()
     }
     else
         m_TimeCounter += 1;
+}
+
+void TuringMachineWindow::resetConnections()
+{
+    emit this->scaleChanged();
 }
 

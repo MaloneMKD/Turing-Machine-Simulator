@@ -34,7 +34,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -52,6 +52,15 @@
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QGraphicsView" name="graphicsView">
+          <property name="styleSheet">
+           <string notr="true">QGraphicsView {
+	background-color: rgb(244, 244, 244);
+}
+
+QGraphicsView:focus {
+	background-color: white;
+}</string>
+          </property>
           <property name="lineWidth">
            <number>1</number>
           </property>
@@ -914,6 +923,9 @@ color: rgb(0, 0, 0);</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="text">
           <string>Add State</string>
          </property>
@@ -926,6 +938,9 @@ color: rgb(0, 0, 0);</string>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
          </property>
          <property name="text">
           <string>Delete State</string>
@@ -947,6 +962,9 @@ color: rgb(0, 0, 0);</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="text">
           <string>Set As START</string>
          </property>
@@ -959,6 +977,9 @@ color: rgb(0, 0, 0);</string>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
          </property>
          <property name="text">
           <string>Set As HALT</string>
@@ -980,6 +1001,9 @@ color: rgb(0, 0, 0);</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="text">
           <string>Add Arrow</string>
          </property>
@@ -993,6 +1017,9 @@ color: rgb(0, 0, 0);</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="text">
           <string>Add Loop Arrow</string>
          </property>
@@ -1005,6 +1032,9 @@ color: rgb(0, 0, 0);</string>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
          </property>
          <property name="text">
           <string>Delete Arrow</string>
@@ -1026,6 +1056,9 @@ color: rgb(0, 0, 0);</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="text">
           <string>Build</string>
          </property>
@@ -1038,6 +1071,9 @@ color: rgb(0, 0, 0);</string>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
          </property>
          <property name="text">
           <string>Test Input</string>
@@ -1052,6 +1088,9 @@ color: rgb(0, 0, 0);</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="text">
           <string>Clear Scene</string>
          </property>
@@ -1064,6 +1103,9 @@ color: rgb(0, 0, 0);</string>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
          </property>
          <property name="text">
           <string>Exit</string>
@@ -1088,11 +1130,6 @@ color: rgb(0, 0, 0);</string>
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
-   </property>
-  </action>
-  <action name="actionUpdate_Save_File">
-   <property name="text">
-    <string>Update Save File</string>
    </property>
   </action>
  </widget>
