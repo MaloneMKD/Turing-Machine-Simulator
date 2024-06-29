@@ -85,7 +85,6 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
     ui->graphicsView->setFrameShadow(QFrame::Raised);
     ui->graphicsView->setAlignment(Qt::AlignLeft | Qt::AlignTop);
     ui->graphicsView->setFocus();
-    //ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     //Setup variables:
@@ -185,9 +184,6 @@ TuringMachineWindow::TuringMachineWindow(QWidget *parent)
     connect(m_LogoTimer, SIGNAL(timeout()), this, SLOT(fadeOutLogo()));
     m_TimeCounter = 0;
     m_LogoTimer->start();
-
-    // TODO Fix display test summary function
-    // TODO Add controls menu to tell how to zoom, and perform other controls.
 }
 
 TuringMachineWindow::~TuringMachineWindow()
@@ -271,13 +267,13 @@ void TuringMachineWindow::setupHelpPage()
     QString licenseMessage2 = "";
     //Get license data from the files:
         //GNU License:
-    QFile file1("COPYING.txt");
+    /*QFile file1("COPYING.txt");
     if(file1.open(QIODevice::ReadOnly))
     {
         QTextStream instream(&file1);
         licenseMessage.append(instream.readAll());
         file1.close();
-    }
+    }*/
         //LGPL License:
     QFile file2("COPYING.LESSER");
     if(file2.open(QIODevice::ReadOnly))
@@ -292,7 +288,7 @@ void TuringMachineWindow::setupHelpPage()
     connect(ui->aboutQtButton, SIGNAL(clicked()), this, SLOT(aboutQtButtonClicked()));
     connect(ui->aboutAuthorButton, SIGNAL(clicked()), this, SLOT(aboutAuthorButtonClicked()));
     connect(ui->openUserManualButton, SIGNAL(clicked()), this, SLOT(openUserManualButtonClicked()));
-    ui->license1TextEdit->setPlainText(licenseMessage);
+    //ui->license1TextEdit->setPlainText(licenseMessage);
     ui->license2TextEdit->setPlainText(licenseMessage2);
 }
 
@@ -361,7 +357,6 @@ void TuringMachineWindow::displayTestSummary()
         //Declare variables:
         QStringList recordDetail;
         QStringList transitionEntry;
-        QTextEdit *textEdit;
         QFont inpTextFont;
         int index = 0;
 
@@ -369,10 +364,8 @@ void TuringMachineWindow::displayTestSummary()
         inpTextFont.setFamily("Corbel");
         inpTextFont.setLetterSpacing(QFont::AbsoluteSpacing, 5);
 
+        QString summaryText = "";
         QString transitionText = "";
-        QListWidgetItem *item = nullptr;
-        ui->listWidget->setSizeAdjustPolicy(QListWidget::AdjustToContents);
-        ui->listWidget->clear();
 
         //Display all test result data:
         for(int i = 0; i< tapeRecord.length(); i++)
@@ -391,31 +384,14 @@ void TuringMachineWindow::displayTestSummary()
                 transitionText += transitionEntry[3] + " ";
                 transitionText += transitionEntry[4];
 
-                //Create the line edit item and set show it on the scene:
-                textEdit = new QTextEdit(this);
-                textEdit->setFrameStyle(QFrame::Raised);
-                textEdit->setFixedHeight(100);
-                textEdit->setFont(inpTextFont);
-                textEdit->setText(recordDetail[0] + "\t\t" + transitionText);
-                textEdit->setReadOnly(true);
-                textEdit->setMaximumWidth(ui->listWidget->width());
-
-                //Change the color of the letter at the index to red:
-                QTextCursor cursor = textEdit->textCursor();
-                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, index);
-                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
-                QTextCharFormat chFormat;
-                chFormat.setTextOutline(QPen(Qt::red));
-                chFormat.setFontWeight(1);
-                cursor.setCharFormat(chFormat);
-
-                item = new QListWidgetItem;
-                item->setSizeHint(QSize(item->sizeHint().width(), 30));
-                ui->listWidget->addItem(item);
-                ui->listWidget->setItemWidget(item, textEdit);
+                // HTML tags to highlight the character on the tape in focus
+                recordDetail[0].insert(index, "<b><u>");
+                recordDetail[0].insert(index + 7, "</u></b>");
+                summaryText += "<p>" + recordDetail[0] + "---------------------" + transitionText + "</p>";
                 transitionText = "";
            }
         }
+        this->ui->textEdit->setHtml(summaryText);
     }
 }
 
@@ -775,6 +751,23 @@ void TuringMachineWindow::testInputButtonClicked()
     }
     else
     {
+        // Stop the timers if they are running
+        if(m_MoveLeftTimer->isActive())
+            m_MoveLeftTimer->stop();
+        if(m_MoveRightTimer->isActive())
+            m_MoveRightTimer->stop();
+        if(m_PauseTimer->isActive())
+            m_PauseTimer->stop();
+
+        // Disable the lear button
+         ui->clearPushButton->setEnabled(false);
+
+        // Set the input edit as read-only
+        ui->inputLineEdit->setReadOnly(true);
+
+        // Disable tape length spinbox
+        ui->tapeLengthSpinBox->setReadOnly(true);
+
         //Reset TM colors:
         for(MyStateItem *s: m_TM)
             s->changeColor(Qt::white);
@@ -843,7 +836,7 @@ void TuringMachineWindow::clearSceneButtonClicked()
 
     m_NumOfStates = 0;
     ui->crashMessageLabel->setText("Reason for crash will appear here");
-    ui->listWidget->clear();
+    ui->textEdit->clear();
 }
 
 void TuringMachineWindow::on_inputLineEdit_editingFinished()
@@ -867,7 +860,6 @@ void TuringMachineWindow::on_inputLineEdit_editingFinished()
 
 void TuringMachineWindow::play()
 {
-    ui->clearPushButton->setEnabled(false);
     if(m_Count < m_MachineData.length() - 1)
     {
         //Change the previous state's color to white:
@@ -889,7 +881,11 @@ void TuringMachineWindow::play()
             m_TM[m_MachineData[m_Count]]->changeColor(Qt::green);
         else
             m_TM[m_MachineData[m_Count]]->changeColor(Qt::red);
+
+        // Re-enable everything that was disabled
         ui->clearPushButton->setEnabled(true);
+        ui->inputLineEdit->setReadOnly(false);
+        ui->tapeLengthSpinBox->setReadOnly(false);
     }
 }
 
@@ -1390,8 +1386,7 @@ void TuringMachineWindow::aboutQtButtonClicked()
 void TuringMachineWindow::aboutAuthorButtonClicked()
 {
     QString message = QString("Author:\tMalone Kudakwashe Napier-Jameson\n"
-                      "Occupation:\tStudent at UNISA\n"
-                      "Email:\tMalone.mkd.makoto@gmail.com\n\n"
+                      "Email:\tMK.Napier-Jameson@outlook.com\n\n"
                       ""
                       "Comments:\nI had a great time coding this application and learning more about the Qt framework\n"
                       "at the same time. I hope this app will be a useful tool in learning and experimenting\n"
